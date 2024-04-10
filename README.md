@@ -1,4 +1,15 @@
 # Email password and social login with MFA + bot detection
 
-We customize the login flow here to only ask for otp-email as a second factor during email password sign in (and not even sign up). This is so that users have a good sign up experience, and to specifically protected against credentials stuffing attacks in the email password sign in flow.
+## Flow description
+A user can sign up via social or email password login with automatic account linking. During sign in with email password, they are asked to also complete an otp email challenge as a second factor measure.
 
+## Security features
+- Preventing against credential stuffing attacks by requiring an otp email challenge during email password sign in. We also determine if this is required based on a risk score.
+- Automatic account linking only for verified accounts.
+- Bot detection to prevent sign ins / sign ups.
+- Customizable password policy
+- Brute force detection for OTP login flow
+- Session security:
+    - CSRF protection
+    - HttpOnly cookies
+    - Rotating refresh tokens
