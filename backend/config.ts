@@ -111,6 +111,15 @@ export const SuperTokensConfig: TypeInput = {
                             }
                             return await oI.emailPasswordSignUp(input);
                         },
+                        emailPasswordSignIn: async (input) => {
+                            let response = await oI.emailPasswordSignIn(input);
+                            if (response.status === "OK") {
+                                if (await isBreachedPassword(input.password)) {
+                                    throw new Error("Password breached");
+                                }
+                            }
+                            return response;
+                        },
                     }
                 },
                 apis: (oI) => {
@@ -150,7 +159,17 @@ export const SuperTokensConfig: TypeInput = {
                                     // Allow attempt. Data missing or invalid, or a server or timeout error
                                 }
                             }
-                            return oI.emailPasswordSignInPOST!(input);
+                            try {
+                                return await oI.emailPasswordSignInPOST!(input);
+                            } catch (err: any) {
+                                if (err.message === "Password breached") {
+                                    return {
+                                        status: "GENERAL_ERROR",
+                                        message: "Your password has been detected in a breach. Please click on the forgot password button below."
+                                    }
+                                }
+                                throw err;
+                            }
                         },
                         emailPasswordSignUpPOST: async (input) => {
                             try {
