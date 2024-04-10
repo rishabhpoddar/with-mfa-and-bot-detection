@@ -8,6 +8,7 @@
         "start": "npx ts-node-dev --project ./tsconfig.json ./index.ts"
     },
     "dependencies": {
+        "@castleio/sdk": "^2.2.1",
         "cors": "^2.8.5",
         "express": "^4.18.1",
         "helmet": "^5.1.0",
