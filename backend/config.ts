@@ -6,6 +6,8 @@ import Dashboard from "supertokens-node/recipe/dashboard";
 import MultiFactorAuth from "supertokens-node/recipe/multifactorauth";
 import AccountLinking from "supertokens-node/recipe/accountlinking";
 import EmailVerification from "supertokens-node/recipe/emailverification";
+import { createHash } from "crypto"
+import axios from "axios";
 
 export function getApiDomain() {
     const apiPort = process.env.REACT_APP_API_PORT || 3001;
@@ -17,6 +19,32 @@ export function getWebsiteDomain() {
     const websitePort = process.env.REACT_APP_WEBSITE_PORT || 3000;
     const websiteUrl = process.env.REACT_APP_WEBSITE_URL || `http://localhost:${websitePort}`;
     return websiteUrl;
+}
+
+async function isBreachedPassword(password: string) {
+    // send first 5 characters to pwnedpasswords API
+    // if response contains the rest of the hash,
+    // then password is breached
+    let shasum = createHash('sha1');
+    shasum.update(password);
+    password = shasum.digest('hex');
+    let response = await new Promise<boolean>((resolve, reject) => {
+        axios.get("https://api.pwnedpasswords.com/range/" + password.substring(0, 5))
+            .then((response) => {
+                let hashSuffix = password.substring(5).toUpperCase();
+                let hashes = response.data.split("\n");
+                for (let i = 0; i < hashes.length; i++) {
+                    if (hashes[i].split(":")[0] === hashSuffix) {
+                        resolve(true);
+                    }
+                }
+                resolve(false);
+            })
+            .catch((err) => {
+                reject(err);
+            })
+    });
+    return response;
 }
 
 export const SuperTokensConfig: TypeInput = {
@@ -35,12 +63,52 @@ export const SuperTokensConfig: TypeInput = {
     recipeList: [
         ThirdPartyEmailPassword.init({
             override: {
+                functions: (oI) => {
+                    return {
+                        ...oI,
+                        updateEmailOrPassword: async (input) => {
+                            if (input.password !== undefined && await isBreachedPassword(input.password)) {
+                                throw new Error("Password breached");
+                            }
+                            return await oI.updateEmailOrPassword(input);
+                        },
+                        emailPasswordSignUp: async (input) => {
+                            if (await isBreachedPassword(input.password)) {
+                                throw new Error("Password breached");
+                            }
+                            return await oI.emailPasswordSignUp(input);
+                        },
+                    }
+                },
                 apis: (oI) => {
                     return {
                         ...oI,
+                        passwordResetPOST: async function (input) {
+                            try {
+                                return await oI.passwordResetPOST!(input);
+                            } catch (err: any) {
+                                if (err.message === "Password breached") {
+                                    return {
+                                        status: "GENERAL_ERROR",
+                                        message: "Please use another password since this password has been breached"
+                                    }
+                                }
+                                throw err;
+                            }
+                        },
                         emailPasswordSignUpPOST: async (input) => {
-                            input.userContext.isSignUp = true;
-                            return oI.emailPasswordSignUpPOST!(input);
+                            try {
+                                input.userContext.isSignUp = true;
+                                return await oI.emailPasswordSignUpPOST!(input);
+                            } catch (err: any) {
+                                if (err.message === "Password breached") {
+                                    return {
+                                        status: "GENERAL_ERROR",
+                                        message: "Please use another password since this password has been breached"
+                                    }
+                                }
+                                throw err;
+                            }
                         },
                         thirdPartySignInUpPOST: async (input) => {
                             input.userContext.isThirdPartyLogin = true;
