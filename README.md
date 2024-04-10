@@ -9,7 +9,7 @@ A user can sign up via social or email password login with automatic account lin
 - Bot detection to prevent sign ins / sign ups.
 - Customizable password policy
 - Brute force detection for OTP login flow
-- Breached password detection to prevent sign up with a known password.
+- Breached password detection to prevent sign up with a known password, and to force users to reset their passwords during sign in.
 - Session security:
     - CSRF protection
     - HttpOnly cookies
