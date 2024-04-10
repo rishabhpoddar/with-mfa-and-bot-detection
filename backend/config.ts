@@ -22,7 +22,8 @@ export function getWebsiteDomain() {
 export const SuperTokensConfig: TypeInput = {
     supertokens: {
         // this is the location of the SuperTokens core.
-        connectionURI: "https://try.supertokens.com",
+        connectionURI: "https://st-dev-9356eb90-f6fd-11ee-a7a1-057a50fdd964.aws.supertokens.io",
+        apiKey: "vNGqkPgjFhAzmA1OKAZP4kVSwh"
     },
     appInfo: {
         appName: "SuperTokens Demo App",
