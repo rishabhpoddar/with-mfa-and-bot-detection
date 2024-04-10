@@ -65,17 +65,6 @@ export const SuperTokensConfig: TypeInput = {
                 },
                 {
                     config: {
-                        thirdPartyId: "github",
-                        clients: [
-                            {
-                                clientId: "467101b197249757c71f",
-                                clientSecret: "e97051221f4b6426e8fe8d51486396703012f5bd",
-                            },
-                        ],
-                    },
-                },
-                {
-                    config: {
                         thirdPartyId: "apple",
                         clients: [
                             {
@@ -86,17 +75,6 @@ export const SuperTokensConfig: TypeInput = {
                                         "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
                                     teamId: "YWQCXGJRJL",
                                 },
-                            },
-                        ],
-                    },
-                },
-                {
-                    config: {
-                        thirdPartyId: "twitter",
-                        clients: [
-                            {
-                                clientId: "4398792-WXpqVXRiazdRMGNJdEZIa3RVQXc6MTpjaQ",
-                                clientSecret: "BivMbtwmcygbRLNQ0zk45yxvW246tnYnTFFq-LH39NwZMxFpdC",
                             },
                         ],
                     },
