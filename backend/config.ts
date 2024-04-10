@@ -34,6 +34,21 @@ export const SuperTokensConfig: TypeInput = {
     // use from SuperTokens. See the full list here: https://supertokens.com/docs/guides
     recipeList: [
         ThirdPartyEmailPassword.init({
+            override: {
+                apis: (oI) => {
+                    return {
+                        ...oI,
+                        emailPasswordSignUpPOST: async (input) => {
+                            input.userContext.isSignUp = true;
+                            return oI.emailPasswordSignUpPOST!(input);
+                        },
+                        thirdPartySignInUpPOST: async (input) => {
+                            input.userContext.isThirdPartyLogin = true;
+                            return oI.thirdPartySignInUpPOST!(input);
+                        },
+                    }
+                }
+            },
             providers: [
                 // We have provided you with development keys which you can use for testing.
                 // IMPORTANT: Please replace them with your own OAuth keys for production use.
@@ -89,7 +104,7 @@ export const SuperTokensConfig: TypeInput = {
             ],
         }),
         EmailVerification.init({
-            mode: "REQUIRED"
+            mode: "OPTIONAL"
         }),
         Passwordless.init({
             contactMethod: "EMAIL",
@@ -106,9 +121,14 @@ export const SuperTokensConfig: TypeInput = {
             override: {
                 functions: (oI) => ({
                     ...oI,
-                    getMFARequirementsForAuth: () => [
-                        MultiFactorAuth.FactorIds.OTP_EMAIL,
-                    ],
+                    getMFARequirementsForAuth: (input) => {
+                        if (input.userContext.isSignUp === true || input.userContext.isThirdPartyLogin === true) {
+                            return [];
+                        }
+                        return [
+                            MultiFactorAuth.FactorIds.OTP_EMAIL,
+                        ]
+                    },
                 }),
             },
         }),
