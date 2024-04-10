@@ -8,11 +8,6 @@ import AccountLinking from "supertokens-node/recipe/accountlinking";
 import EmailVerification from "supertokens-node/recipe/emailverification";
 import { createHash } from "crypto"
 import axios from "axios";
-import { Castle } from '@castleio/sdk';
-import { APIError, InvalidRequestTokenError } from '@castleio/sdk';
-import { BaseRequest } from "supertokens-node/lib/build/framework/request";
-
-export const castle = new Castle({ apiSecret: "Hp3AnQYkn571fXu1GBVA3xeay2TWz2ez" });
 
 export function getApiDomain() {
     const apiPort = process.env.REACT_APP_API_PORT || 3001;
@@ -50,34 +45,6 @@ async function isBreachedPassword(password: string) {
             })
     });
     return response;
-}
-
-async function makeCastleCall(email: string | undefined, req: BaseRequest, type: "$login" | "$registration") {
-    let jsonObject = await req.getJSONBody();
-    return await castle.filter({
-        request_token: jsonObject["castleToken"],
-        context: getHeadersAndIpFromExpressLikeRequest(req.original),
-        type,
-        status: '$attempted',
-        params: {
-            email,
-        },
-    });
-}
-
-function getHeadersAndIpFromExpressLikeRequest(req: Request): {
-    headers: { [key: string]: string },
-    ip: string
-} {
-    let headers: { [key: string]: string } = {};
-    for (let key of Object.keys(req.headers)) {
-        headers[key] = (req as any).headers[key]!;
-    }
-    return {
-        headers,
-        ip: (req as any).headers['x-forwarded-for'] || "127.0.0.1"
-    }
-
 }
 
 export const SuperTokensConfig: TypeInput = {
@@ -140,26 +107,6 @@ export const SuperTokensConfig: TypeInput = {
                         },
                         emailPasswordSignInPOST: async (input) => {
                             try {
-                                const result: any = await makeCastleCall(input.formFields.find(v => v.id === "email")!.value, input.options.req, "$login");
-                                // Handle "deny" actions
-                                if (result.policy.action === 'deny') {
-                                    return {
-                                        status: "GENERAL_ERROR",
-                                        message: "Cannot sign in right now."
-                                    }
-                                }
-                            } catch (e) {
-                                if (e instanceof InvalidRequestTokenError) {
-                                    // Invalid request token is very likely a bad actor bypassing fingerprinting
-                                    return {
-                                        status: "GENERAL_ERROR",
-                                        message: "Cannot sign in right now."
-                                    }
-                                } else if (e instanceof APIError) {
-                                    // Allow attempt. Data missing or invalid, or a server or timeout error
-                                }
-                            }
-                            try {
                                 return await oI.emailPasswordSignInPOST!(input);
                             } catch (err: any) {
                                 if (err.message === "Password breached") {
@@ -172,26 +119,6 @@ export const SuperTokensConfig: TypeInput = {
                             }
                         },
                         emailPasswordSignUpPOST: async (input) => {
-                            try {
-                                const result: any = await makeCastleCall(input.formFields.find(v => v.id === "email")!.value, input.options.req, "$registration");
-                                // Handle "deny" actions
-                                if (result.policy.action === 'deny') {
-                                    return {
-                                        status: "GENERAL_ERROR",
-                                        message: "Cannot sign up right now."
-                                    }
-                                }
-                            } catch (e) {
-                                if (e instanceof InvalidRequestTokenError) {
-                                    // Invalid request token is very likely a bad actor bypassing fingerprinting
-                                    return {
-                                        status: "GENERAL_ERROR",
-                                        message: "Cannot sign up right now."
-                                    }
-                                } else if (e instanceof APIError) {
-                                    // Allow attempt. Data missing or invalid, or a server or timeout error
-                                }
-                            }
                             try {
                                 input.userContext.isSignUp = true;
                                 return await oI.emailPasswordSignUpPOST!(input);
@@ -206,26 +133,6 @@ export const SuperTokensConfig: TypeInput = {
                             }
                         },
                         thirdPartySignInUpPOST: async (input) => {
-                            try {
-                                const result: any = await makeCastleCall(undefined, input.options.req, "$login");
-                                // Handle "deny" actions
-                                if (result.policy.action === 'deny') {
-                                    return {
-                                        status: "GENERAL_ERROR",
-                                        message: "Cannot login right now."
-                                    }
-                                }
-                            } catch (e) {
-                                if (e instanceof InvalidRequestTokenError) {
-                                    // Invalid request token is very likely a bad actor bypassing fingerprinting
-                                    return {
-                                        status: "GENERAL_ERROR",
-                                        message: "Cannot login right now."
-                                    }
-                                } else if (e instanceof APIError) {
-                                    // Allow attempt. Data missing or invalid, or a server or timeout error
-                                }
-                            }
                             input.userContext.isThirdPartyLogin = true;
                             return oI.thirdPartySignInUpPOST!(input);
                         },

@@ -8,9 +8,6 @@ import { PasswordlessPreBuiltUI } from "supertokens-auth-react/recipe/passwordle
 import MultiFactorAuth from "supertokens-auth-react/recipe/multifactorauth";
 import { MultiFactorAuthPreBuiltUI } from "supertokens-auth-react/recipe/multifactorauth/prebuiltui";
 import Session from "supertokens-auth-react/recipe/session";
-import Castle from '@castleio/castle-js'
-
-const castle = Castle.configure({ pk: 'pk_pm1G7ivoFQA7HDA9TLjqa1JywNeDYJrN' });
 
 export function getApiDomain() {
     const apiPort = process.env.REACT_APP_API_PORT || 3001;
@@ -34,30 +31,6 @@ export const SuperTokensConfig = {
     // use from SuperTokens. See the full list here: https://supertokens.com/docs/guides
     recipeList: [
         ThirdPartyEmailPassword.init({
-            preAPIHook: async (context) => {
-                if (context.action === "EMAIL_PASSWORD_SIGN_IN" ||
-                    context.action === "EMAIL_PASSWORD_SIGN_UP" ||
-                    context.action === "THIRD_PARTY_SIGN_IN_UP") {
-                    let requestInit = context.requestInit;
-                    const body = requestInit.body;
-                    if (typeof body === "string") {
-                        let castleToken = await new Promise<string | undefined>((resolve) => {
-                            castle.createRequestToken().then((token) => {
-                                resolve(token)
-                            }, () => {
-                                resolve(undefined)
-                            })
-                        });
-                        if (castleToken !== undefined) {
-                            requestInit.body = JSON.stringify({
-                                ...JSON.parse(body),
-                                castleToken
-                            });
-                        }
-                    }
-                }
-                return context;
-            },
             signInAndUpFeature: {
                 providers: [Google.init(), Apple.init()],
             },
