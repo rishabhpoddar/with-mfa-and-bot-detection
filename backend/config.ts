@@ -9,7 +9,7 @@ import EmailVerification from "supertokens-node/recipe/emailverification";
 import { createHash } from "crypto"
 import axios from "axios";
 import { Castle } from '@castleio/sdk';
-import { APIError, ContextPrepareService, InvalidRequestTokenError } from '@castleio/sdk';
+import { APIError, InvalidRequestTokenError } from '@castleio/sdk';
 import { BaseRequest } from "supertokens-node/lib/build/framework/request";
 
 export const castle = new Castle({ apiSecret: "Hp3AnQYkn571fXu1GBVA3xeay2TWz2ez" });
